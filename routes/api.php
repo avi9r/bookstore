@@ -31,6 +31,8 @@ Route::get('/books', [BooksController::class, 'getBooks']);
 Route::get('/books/{id}', [BooksController::class, 'show']);
 Route::put('/books/{id}', [BooksController::class, 'update']);
 Route::delete('/books/{id}', [BooksController::class, 'destroy']);
-Route::get('/books-filter', [BookController::class, 'getBooksFilter']);
+Route::get('/books-filter', [BooksController::class, 'getBooksFilter']);
+Route::get('/search', [BooksController::class, 'search']);
+
 
 
