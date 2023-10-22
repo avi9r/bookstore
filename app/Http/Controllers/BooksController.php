@@ -6,6 +6,7 @@ use App\Models\Books;
 use Illuminate\Http\Request;
 use App\Jobs\SendOrderConfirmationEmail;
 use App\Services\ElasticsearchService;
+use Illuminate\Support\Facades\Storage;
 
 
 class BooksController extends Controller
@@ -24,14 +25,31 @@ class BooksController extends Controller
             'genre' => 'required|string',
             'description' => 'required|string',
             'isbn' => 'required|string|unique:books',
-            'image'=> 'required|string',
+            'image'=> 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'published' => 'required|date',
             'publisher' => 'required|string',
         ]);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
 
-        $book = Books::create($data);
+            Storage::disk('public')->put($imageName, file_get_contents($image));
 
-        return response()->json($book, 201);
+            $book = Books::create([
+                'title' => $request->title,
+                'author' => $request->author,
+                'genre' => $request->genre,
+                'description' => $request->description,
+                'isbn' => $request->isbn,
+                'published' => $request->published,
+                'publisher' => $request->publisher,
+                'image' => asset('storage/' . $imageName), 
+            ]);
+
+            return response()->json($book, 201); 
+        }
+
+        return response()->json(['error' => 'Image upload failed'], 500);
     }
 
     // Get a list of books
@@ -66,15 +84,25 @@ class BooksController extends Controller
             'title' => 'string',
             'author' => 'string',
             'genre' => 'string',
-            'description' => 'required|string',
-            'isbn' => 'string|unique:books,isbn,' . $book->id,
-            'image'=> 'string',
+            'description' => 'string',
+            'isbn' => 'unique:books,isbn,' . $book->id,
             'published' => 'date',
             'publisher' => 'string',
         ]);
-
         $book->update($data);
+        if ($request->hasFile('image')) {
 
+            $request->validate([
+            'image'=> 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            Storage::disk('public')->put($imageName, file_get_contents($image));
+            Books::where('id', $id)->update(['image' => asset('storage/' . $imageName)]);
+            return response()->json($book);
+        }
+        // $book->update($data);
         return response()->json($book);
     }
 
@@ -129,12 +157,8 @@ class BooksController extends Controller
     public function search(Request $request)
     {
         $params = [
-            'title' => $request->input('title'),
             'query' => $request->input('query'),
-            'author' => $request->input('author'),
-            'isbn' => $request->input('isbn'),
-            'published' => $request->input('published'),
-            // Add more filters as needed
+            'filter' => $request->input('filter'),
         ];
         $results = $this->elasticsearchService->searchBooks($params);
 

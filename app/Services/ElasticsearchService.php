@@ -22,17 +22,16 @@ class ElasticsearchService
         $queryBuilder = Books::query();
 
         // Apply search condition if query is present
-        if (!empty($params['query'])) {
-            $queryBuilder->where(function ($query) use ($params) {
-                $query->where('title', 'like', '%' . $params['query'] . '%')
-                    ->orWhere('author', 'like', '%' . $params['query'] . '%')
-                    ->orWhere('isbn', 'like', '%' . $params['query'] . '%')
-                    ->orWhere('genre', 'like', '%' . $params['query'] . '%')
-                    ->orWhere('published', 'like', '%' . $params['query'] . '%');
+        // if (!empty($params['query'])) {
+        //     $queryBuilder->where(function ($query) use ($params) {
+        //         $query->where('title', 'like', '%' . $params['query'] . '%')
+        //             ->orWhere('author', 'like', '%' . $params['query'] . '%')
+        //             ->orWhere('isbn', 'like', '%' . $params['query'] . '%')
+        //             ->orWhere('genre', 'like', '%' . $params['query'] . '%')
+        //             ->orWhere('published', 'like', '%' . $params['query'] . '%');
 
-            });
-        }
-
+        //     });
+        // }
         if (!empty($params['filter'])) {
             $queryBuilder->where($params['filter'], $params['query']);
         }        

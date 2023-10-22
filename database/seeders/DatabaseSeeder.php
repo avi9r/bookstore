@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
 use App\Models\Books;
+use App\Models\Role;
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,5 +30,7 @@ class DatabaseSeeder extends Seeder
                 'publisher' =>$bookData['publisher'],
             ]);
         }
+        Role::create(['name' => 'admin']);
+        Role::create(['name' => 'customer']);
     }
 }

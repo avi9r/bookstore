@@ -19,7 +19,10 @@ class LoginController extends Controller
             // Authentication successful
             $user = Auth::user();
             $token = $user->createToken('MyAppToken')->plainTextToken;
-
+            $user->role = 'customer';
+            if ($user->hasRole('admin')) {
+                $user->role = 'admin';
+            }
             return response()->json(['message' => 'Login successful', 'user' => $user, 'token' => $token]);
         } else {
             // Authentication failed

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\UserController;
 
 class RegisterController extends Controller
 {
@@ -23,7 +24,8 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
+        $assingrole = new UserController();
+        $assingrole->assignRoleToUser($request,str($user->id));
         return response()->json(['message' => 'User registered successfully', 'user' => $user]);
     }
 }
