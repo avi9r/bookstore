@@ -15,7 +15,7 @@ class UserController extends Controller
             $role = $request->role;
         }
         $user = User::find($userId);
-        $role = Role::where('name', $role)->first(); // Replace 'customer' with the desired role name
+        $role = Role::where('name', $role)->first();
 
         if ($user && $role) {
             $user->assignRole($role);

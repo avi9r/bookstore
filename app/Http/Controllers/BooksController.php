@@ -16,7 +16,6 @@ class BooksController extends Controller
     {
         $this->elasticsearchService = $elasticsearchService;
     }
-    // Create a new book
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -52,14 +51,12 @@ class BooksController extends Controller
         return response()->json(['error' => 'Image upload failed'], 500);
     }
 
-    // Get a list of books
-    public function getBooks()
+    public function getBooks(Request $request)
     {
-        $books = Books::all();
+        $books = Books::paginate($request->itemPerPage)->all();
         return response()->json($books);
     }
 
-    // Get a specific book by ID
     public function show($id)
     {
         $book = Books::find($id);
@@ -71,7 +68,6 @@ class BooksController extends Controller
         return response()->json($book);
     }
 
-    // Update a book by ID
     public function update(Request $request, $id)
     {
         $book = Books::find($id);
@@ -102,11 +98,10 @@ class BooksController extends Controller
             Books::where('id', $id)->update(['image' => asset('storage/' . $imageName)]);
             return response()->json($book);
         }
-        // $book->update($data);
+
         return response()->json($book);
     }
 
-    // Delete a book by ID
     public function destroy($id)
     {
         $book = Books::find($id);
@@ -120,40 +115,6 @@ class BooksController extends Controller
         return response()->json(['message' => 'Book deleted successfully']);
     }
 
-    // public function getBooksFilter(Request $request)
-    // {
-    //     $query = Book::query();
-
-    //     // Filter by title
-    //     if ($request->has('title')) {
-    //         $query->where('title', 'like', '%' . $request->input('title') . '%');
-    //     }
-
-    //     // Filter by author
-    //     if ($request->has('author')) {
-    //         $query->where('author', 'like', '%' . $request->input('author') . '%');
-    //     }
-
-    //     // Filter by publication date
-    //     if ($request->has('published')) {
-    //         $query->whereDate('published', $request->input('published'));
-    //     }
-
-    //     // Filter by ISBN
-    //     if ($request->has('isbn')) {
-    //         $query->where('isbn', 'like', '%' . $request->input('isbn') . '%');
-    //     }
-
-    //     // Filter by genre
-    //     if ($request->has('genre')) {
-    //         $query->where('genre', 'like', '%' . $request->input('genre') . '%');
-    //     }
-
-    //     // Paginate the results
-    //     $books = $query->paginate($request->input('per_page', 10));
-
-    //     return response()->json($books);
-    // }
     public function search(Request $request)
     {
         $params = [
@@ -170,22 +131,22 @@ class BooksController extends Controller
         $request->validate([
             'book_id' => 'required|exists:books,id',
             'quantity' => 'required|integer|min:1',
-            // Add more validation rules as needed
+    
         ]);
         $order = Order::create([
             'book_id' => $request->input('book_id'),
             'quantity' => $request->input('quantity'),
-            // Add more order details as needed
+    
         ]);
     
-        // Update book quantity (if applicable)
+
         $book = Book::findOrFail($request->input('book_id'));
         $book->decrement('quantity', $request->input('quantity'));
         
-        // Dispatch the job to send the order confirmation email
+
         SendOrderConfirmationEmail::dispatch($order)->onQueue('emails');
         
-        // Return response or redirect
+
         return response()->json(['message' => 'Order placed successfully']);
 
     }
